@@ -145,7 +145,6 @@
         });
 
         function selezionaCanale(canale) {
-            canaleSelezionato = ...; // Impostato correttamente dalla funzione
             canaleSelezionato = canale;
             const btnTG = document.getElementById('btnTelegram'); const btnWA = document.getElementById('btnWhatsApp'); const btnML = document.getElementById('btnMail');
             const campoWA = document.getElementById('campoWhatsApp'); const bloccoML = document.getElementById('bloccoMail'); const campoAll = document.getElementById('campoAllegato');
@@ -234,7 +233,6 @@
                 }
             }
 
-            // CORREZIONE ACQUISIZIONE DATI: Se scritti a mano, prende il valore diretto dal box di ricerca
             let waVal = canaleSelezionato === "WhatsApp" ? (document.getElementById('whatsappNumber').value || document.getElementById('searchWA').value) : "";
             let mailVal = canaleSelezionato === "Mail" ? (document.getElementById('emailDestinatario').value || document.getElementById('searchMail').value) : "";
 
@@ -250,12 +248,11 @@
                 giornoOra: giornoOraValore
             };
 
-            // CORREZIONE INTEGRALE FETCH: Usiamo FormData o stringa testo pura compatibile con il no-cors
             fetch(WEB_APP_URL, { 
                 method: "POST", 
                 mode: "no-cors", 
                 cache: "no-cache",
-                headers: { "Content-Type": "text/plain" }, // Cruciale per evitare il blocco CORS su richieste no-cors
+                headers: { "Content-Type": "text/plain" }, 
                 body: JSON.stringify(payload) 
             })
             .then(() => {

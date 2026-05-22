@@ -4,241 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Programmatore Telegram</title>
-    
-    <!-- Configurazione per renderla una Web App a schermo intero su iOS e Android -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
     <style>
-        :root {
-            --primary-color: #007aff;
-            --background-color: #f5f5f7;
-            --card-background: #ffffff;
-            --text-color: #333333;
-            --border-color: #e5e5ea;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--background-color);
-            margin: 0;
-            padding: 16px;
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 90vh;
-        }
-
-        .card {
-            background: var(--card-background);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-
-        h2 {
-            margin-top: 0;
-            margin-bottom: 24px;
-            color: var(--primary-color);
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #555;
-        }
-
-        textarea, input, select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background-color: #fcfcfd;
-            transition: border-color 0.2s, background-color 0.2s;
-            -webkit-appearance: none;
-        }
-
-        textarea:focus, input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background-color: #ffffff;
-        }
-
-        textarea {
-            resize: none;
-            height: 120px;
-            font-family: inherit;
-        }
-
-        select {
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238e8e93' d='M0 0l5 5 5-5z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            background-size: 12px;
-            padding-right: 40px;
-        }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, background-color 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        button:disabled {
-            background-color: #999;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f7; padding: 20px; display: flex; justify-content: center; }
+        .card { background: #ffffff; padding: 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05); width: 100%; max-width: 400px; }
+        h2 { color: #007aff; text-align: center; margin-bottom: 24px; }
+        .form-group { margin-bottom: 20px; }
+        .hidden { display: none !important; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #555; }
+        textarea, input, select { width: 100%; padding: 12px; border: 1px solid #e5e5ea; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 16px; background-color: #007aff; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        button:disabled { background-color: #999; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🚀 Send Later </h2>
+    <h2>🚀 Programma Messaggio</h2>
     <form id="msgForm">
         <div class="form-group">
             <label for="messaggio">Messaggio di Testo</label>
-            <textarea id="messaggio" placeholder="Scrivi il tuo messaggio qui..." required></textarea>
+            <textarea id="messaggio" required placeholder="Scrivi qui..."></textarea>
         </div>
-        
         <div class="form-group">
-            <label for="allegato">Link Allegato (URL File/Foto da Google Drive)</label>
-            <input type="url" id="allegato" placeholder="https://drive.google.com/...">
+            <label for="allegato">Link Allegato (URL)</label>
+            <input type="url" id="allegato" placeholder="https://...">
         </div>
-        
         <div class="form-group">
-            <label for="dataOra">Data e Ora di Invio</label>
+            <label for="dataOra">Data e Ora di Inizio</label>
             <input type="datetime-local" id="dataOra" required>
         </div>
-        
         <div class="form-group">
-            <label for="frequenza">Frequenza Ripetizione</label>
-            <select id="frequenza" required>
+            <label for="frequenza">Frequenza</label>
+            <select id="frequenza">
                 <option value="Singolo">Singolo Invio</option>
                 <option value="Settimanale">Settimanale</option>
-                <option value="Quindicinale">Quindicinale</option>
                 <option value="Mensile">Mensile</option>
             </select>
         </div>
-
-        <!-- Questo gruppo si mostra SOLO se viene selezionato "Settimanale" -->
-        <div class="form-group hidden" id="giornoSettimanaGroup">
-            <label for="giornoSettimana">Giorno della Settimana</label>
-            <select id="giornoSettimana">
-                <option value="">Seleziona un giorno...</option>
-                <option value="Lunedì">Lunedì</option>
-                <option value="Martedì">Martedì</option>
-                <option value="Mercoledì">Mercoledì</option>
-                <option value="Giovedì">Giovedì</option>
-                <option value="Venerdì">Venerdì</option>
-                <option value="Sabato">Sabato</option>
-                <option value="Domenica">Domenica</option>
-            </select>
+        <div class="form-group hidden" id="intervalloGroup">
+            <label id="labelIntervallo" for="intervallo">Ogni quanto?</label>
+            <input type="number" id="intervallo" value="1" min="1">
         </div>
-        
         <button type="submit" id="submitBtn">Programma Messaggio</button>
     </form>
 </div>
 
 <script>
-    // Aggiornato con il tuo nuovo URL di distribuzione
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDfuUL68DeSagNMutnpJnrwZvttcQiG-6CipbrG_H-qy5cAh1pCr5JyKYnr_hd526I/exec";
 
-    const frequenzaSelect = document.getElementById('frequenza');
-    const giornoGroup = document.getElementById('giornoSettimanaGroup');
-    const giornoSelect = document.getElementById('giornoSettimana');
+    const freq = document.getElementById('frequenza');
+    const group = document.getElementById('intervalloGroup');
 
-    // Mostra/Nasconde il selettore del giorno della settimana in base alla frequenza
-    frequenzaSelect.addEventListener('change', function() {
-        if (this.value === 'Settimanale') {
-            giornoGroup.classList.remove('hidden');
-            giornoSelect.required = true;
+    freq.addEventListener('change', () => {
+        if(freq.value !== 'Singolo') {
+            group.classList.remove('hidden');
+            document.getElementById('labelIntervallo').innerText = freq.value === 'Settimanale' ? "Ogni quante settimane?" : "Ogni quanti mesi?";
         } else {
-            giornoGroup.classList.add('hidden');
-            giornoSelect.required = false;
-            giornoSelect.value = ""; // Resetta la selezione se cambia frequenza
+            group.classList.add('hidden');
         }
     });
 
-    // Precompila automaticamente il campo Data e Ora con il momento attuale locale
-    window.addEventListener('DOMContentLoaded', () => {
-        const dataOraInput = document.getElementById('dataOra');
-        const oraAttuale = new Date();
-        oraAttuale.setMinutes(oraAttuale.getMinutes() - oraAttuale.getTimezoneOffset());
-        dataOraInput.value = oraAttuale.toISOString().slice(0, 16);
-    });
-
-    // Gestione dell'invio dei dati al Google Sheet
     document.getElementById('msgForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Salvataggio in corso...";
-        
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Salvataggio...";
+
         const payload = {
             messaggio: document.getElementById('messaggio').value,
             allegato: document.getElementById('allegato').value,
             dataOra: document.getElementById('dataOra').value.replace('T', ' '),
-            frequenza: frequenzaSelect.value,
-            giornoOra: giornoSelect.value
+            frequenza: freq.value,
+            intervallo: document.getElementById('intervallo').value
         };
 
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors',
-            cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         })
         .then(() => {
-            alert('Messaggio memorizzato nel foglio con successo!');
+            alert('Messaggio programmato con successo!');
             document.getElementById('msgForm').reset();
-            giornoGroup.classList.add('hidden'); // Nasconde nuovamente il selettore dei giorni
-            
-            const dataOraInput = document.getElementById('dataOra');
-            const oraAttuale = new Date();
-            oraAttuale.setMinutes(oraAttuale.getMinutes() - oraAttuale.getTimezoneOffset());
-            dataOraInput.value = oraAttuale.toISOString().slice(0, 16);
+            group.classList.add('hidden');
         })
-        .catch(err => {
-            alert('Si è verificato un errore durante il salvataggio: ' + err);
-        })
+        .catch(err => alert('Errore: ' + err))
         .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Programma Messaggio";
+            btn.disabled = false;
+            btn.innerText = "Programma Messaggio";
         });
     });
 </script>

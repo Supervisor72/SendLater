@@ -236,24 +236,24 @@
             let waVal = canaleSelezionato === "WhatsApp" ? (document.getElementById('whatsappNumber').value || document.getElementById('searchWA').value) : "";
             let mailVal = canaleSelezionato === "Mail" ? (document.getElementById('emailDestinatario').value || document.getElementById('searchMail').value) : "";
 
-            const payload = {
-                canale: canaleSelezionato, 
-                messaggio: document.getElementById('messaggio').value,
-                allegato: canaleSelezionato === "Telegram" ? document.getElementById('allegato').value : "",
-                whatsapp: waVal, 
-                destinatarioMail: mailVal, 
-                oggettoMail: canaleSelezionato === "Mail" ? document.getElementById('emailOggetto').value : "",
-                dataOra: dataOraFormattata, 
-                frequenza: frequenza, 
-                giornoOra: giornoOraValore
-            };
+            // MODIFICA CRUCIALE: Inviamo i parametri come Form Standard URL encoded compatibile al 100% con no-cors e Apps Script e.parameter
+            const params = new URLSearchParams();
+            params.append('canale', canaleSelezionato);
+            params.append('messaggio', document.getElementById('messaggio').value);
+            params.append('allegato', canaleSelezionato === "Telegram" ? document.getElementById('allegato').value : "");
+            params.append('whatsapp', waVal);
+            params.append('destinatarioMail', mailVal);
+            params.append('oggettoMail', canaleSelezionato === "Mail" ? document.getElementById('emailOggetto').value : "");
+            params.append('dataOra', dataOraFormattata);
+            params.append('frequenza', frequenza);
+            params.append('giornoOra', giornoOraValore);
 
             fetch(WEB_APP_URL, { 
                 method: "POST", 
                 mode: "no-cors", 
                 cache: "no-cache",
-                headers: { "Content-Type": "text/plain" }, 
-                body: JSON.stringify(payload) 
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
+                body: params.toString()
             })
             .then(() => {
                 alert("Messaggio programmato con successo!");

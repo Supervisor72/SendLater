@@ -54,6 +54,10 @@
             margin-bottom: 20px;
         }
 
+        .hidden {
+            display: none !important;
+        }
+
         label {
             display: block;
             font-weight: 600;
@@ -141,11 +145,26 @@
         
         <div class="form-group">
             <label for="frequenza">Frequenza Ripetizione</label>
-            <select id="frequenza">
+            <select id="frequenza" required>
                 <option value="Singolo">Singolo Invio</option>
                 <option value="Settimanale">Settimanale</option>
                 <option value="Quindicinale">Quindicinale</option>
                 <option value="Mensile">Mensile</option>
+            </select>
+        </div>
+
+        <!-- Questo gruppo si mostra SOLO se viene selezionato "Settimanale" -->
+        <div class="form-group hidden" id="giornoSettimanaGroup">
+            <label for="giornoSettimana">Giorno della Settimana</label>
+            <select id="giornoSettimana">
+                <option value="">Seleziona un giorno...</option>
+                <option value="Lunedì">Lunedì</option>
+                <option value="Martedì">Martedì</option>
+                <option value="Mercoledì">Mercoledì</option>
+                <option value="Giovedì">Giovedì</option>
+                <option value="Venerdì">Venerdì</option>
+                <option value="Sabato">Sabato</option>
+                <option value="Domenica">Domenica</option>
             </select>
         </div>
         
@@ -154,8 +173,23 @@
 </div>
 
 <script>
-    // Il tuo link ufficiale di Google Apps Script integrato
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqeCMxn9saymZAKMudg6ZbMnFAPVgKBAnr2EoZDN4qD76Dj65taYCdDB9xfmVhPhSP/exec";
+
+    const frequenzaSelect = document.getElementById('frequenza');
+    const giornoGroup = document.getElementById('giornoSettimanaGroup');
+    const giornoSelect = document.getElementById('giornoSettimana');
+
+    // Mostra/Nasconde il selettore del giorno della settimana in base alla frequenza
+    frequenzaSelect.addEventListener('change', function() {
+        if (this.value === 'Settimanale') {
+            giornoGroup.classList.remove('hidden');
+            giornoSelect.required = true;
+        } else {
+            giornoGroup.classList.add('hidden');
+            giornoSelect.required = false;
+            giornoSelect.value = ""; // Resetta la selezione se cambia frequenza
+        }
+    });
 
     // Precompila automaticamente il campo Data e Ora con il momento attuale locale
     window.addEventListener('DOMContentLoaded', () => {
@@ -170,7 +204,6 @@
         e.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
-        
         submitBtn.disabled = true;
         submitBtn.innerText = "Salvataggio in corso...";
         
@@ -178,7 +211,8 @@
             messaggio: document.getElementById('messaggio').value,
             allegato: document.getElementById('allegato').value,
             dataOra: document.getElementById('dataOra').value.replace('T', ' '),
-            frequenza: document.getElementById('frequenza').value
+            frequenza: frequenzaSelect.value,
+            giornoOra: giornoSelect.value // Questo sarà il 5° dato inviato (che finirà nella colonna F)
         };
 
         fetch(WEB_APP_URL, {
@@ -191,6 +225,7 @@
         .then(() => {
             alert('Messaggio memorizzato nel foglio con successo!');
             document.getElementById('msgForm').reset();
+            giornoGroup.classList.add('hidden'); // Nasconde nuovamente il selettore dei giorni
             
             const dataOraInput = document.getElementById('dataOra');
             const oraAttuale = new Date();

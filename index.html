@@ -2,270 +2,210 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pianificatore Smart</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Programmatore Telegram</title>
+    
+    <!-- Configurazione per renderla una Web App a schermo intero su iOS e Android -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <style>
-        .fade-in { animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        .suggerimenti-list::-webkit-scrollbar { width: 4px; }
-        .suggerimenti-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        :root {
+            --primary-color: #007aff;
+            --background-color: #f5f5f7;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --border-color: #e5e5ea;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 16px;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .card {
+            background: var(--card-background);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #fcfcfd;
+            transition: border-color 0.2s, background-color 0.2s;
+            -webkit-appearance: none;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #ffffff;
+        }
+
+        textarea {
+            resize: none;
+            height: 120px;
+            font-family: inherit;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238e8e93' d='M0 0l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 12px;
+            padding-right: 40px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #999;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 space-y-5">
+<div class="card">
+    <h2>🚀 Programma Messaggio</h2>
+    <form id="msgForm">
+        <div class="form-group">
+            <label for="messaggio">Messaggio di Testo</label>
+            <textarea id="messaggio" placeholder="Scrivi il tuo messaggio qui..." required></textarea>
+        </div>
         
-        <div class="text-center">
-            <h1 class="text-2xl font-bold text-gray-800">Pianifica Messaggio</h1>
-            <p class="text-sm text-gray-500 mt-1">Scegli canale, destinatario e frequenza</p>
+        <div class="form-group">
+            <label for="allegato">Link Allegato (URL File/Foto da Google Drive)</label>
+            <input type="url" id="allegato" placeholder="https://drive.google.com/...">
         </div>
-
-        <div class="grid grid-cols-3 gap-2">
-            <button id="btnTelegram" onclick="selezionaCanale('Telegram')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-600 font-semibold text-xs cursor-pointer transition-all">
-                <span class="text-lg mb-1">✈️</span>Telegram
-            </button>
-            <button id="btnWhatsApp" onclick="selezionaCanale('WhatsApp')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-gray-200 text-gray-500 font-semibold text-xs cursor-pointer transition-all hover:bg-gray-50">
-                <span class="text-lg mb-1">🟢</span>WhatsApp
-            </button>
-            <button id="btnMail" onclick="selezionaCanale('Mail')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-gray-200 text-gray-500 font-semibold text-xs cursor-pointer transition-all hover:bg-gray-50">
-                <span class="text-lg mb-1">📧</span>Email
-            </button>
+        
+        <div class="form-group">
+            <label for="dataOra">Data e Ora di Invio</label>
+            <input type="datetime-local" id="dataOra" required>
         </div>
+        
+        <div class="form-group">
+            <label for="frequenza">Frequenza Ripetizione</label>
+            <select id="frequenza">
+                <option value="Singolo">Singolo Invio</option>
+                <option value="Settimanale">Settimanale</option>
+                <option value="Quindicinale">Quindicinale</option>
+                <option value="Mensile">Mensile</option>
+            </select>
+        </div>
+        
+        <button type="submit" id="submitBtn">Programma Messaggio</button>
+    </form>
+</div>
 
-        <form id="messageForm" class="space-y-4">
+<script>
+    // Il tuo link ufficiale di Google Apps Script integrato
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqeCMxn9saymZAKMudg6ZbMnFAPVgKBAnr2EoZDN4qD76Dj65taYCdDB9xfmVhPhSP/exec";
+
+    // Precompila automaticamente il campo Data e Ora con il momento attuale locale
+    window.addEventListener('DOMContentLoaded', () => {
+        const dataOraInput = document.getElementById('dataOra');
+        const oraAttuale = new Date();
+        oraAttuale.setMinutes(oraAttuale.getMinutes() - oraAttuale.getTimezoneOffset());
+        dataOraInput.value = oraAttuale.toISOString().slice(0, 16);
+    });
+
+    // Gestione dell'invio dei dati al Google Sheet
+    document.getElementById('msgForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Salvataggio in corso...";
+        
+        const payload = {
+            messaggio: document.getElementById('messaggio').value,
+            allegato: document.getElementById('allegato').value,
+            dataOra: document.getElementById('dataOra').value.replace('T', ' '),
+            frequenza: document.getElementById('frequenza').value
+        };
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            alert('Messaggio memorizzato nel foglio con successo!');
+            document.getElementById('msgForm').reset();
             
-            <div id="campoWhatsApp" class="hidden fade-in space-y-1 relative">
-                <label class="text-sm font-semibold text-gray-700">Destinatario WhatsApp (Cerca in Rubrica o digita numero)</label>
-                <input type="text" id="searchWA" placeholder="Inizia a digitare il nome o numero..." oninput="cercaInRubrica(this.value, 'WA')" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
-                <input type="hidden" id="whatsappNumber">
-                <div id="suggerimentiWA" class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden suggerimenti-list"></div>
-            </div>
-
-            <div id="bloccoMail" class="hidden fade-in space-y-3">
-                <div class="space-y-1 relative">
-                    <label class="text-sm font-semibold text-gray-700">Destinatario Email (Cerca in Rubrica o digita email)</label>
-                    <input type="text" id="searchMail" placeholder="Inizia a digitare il nome o email..." oninput="cercaInRubrica(this.value, 'Mail')" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <input type="hidden" id="emailDestinatario">
-                    <div id="suggerimentiMail" class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden suggerimenti-list"></div>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-sm font-semibold text-gray-700">Oggetto dell'Email</label>
-                    <input type="text" id="emailOggetto" placeholder="Inserisci l'oggetto..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                </div>
-            </div>
-
-            <div class="space-y-1">
-                <label id="labelMessaggio" class="text-sm font-semibold text-gray-700">Testo del Messaggio</label>
-                <textarea id="messaggio" rows="4" required placeholder="Scrivi il testo qui..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-            </div>
-
-            <div id="campoAllegato" class="space-y-1">
-                <label class="text-sm font-semibold text-gray-700">Link Immagine Allegata (Opzionale)</label>
-                <input type="url" id="allegato" placeholder="https://esempio.com/immagine.jpg" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <div class="space-y-1">
-                <label class="text-sm font-semibold text-gray-700">Frequenza Invio</label>
-                <select id="frequenza" onchange="gestisciFrequenza()" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="Singolo">Invio Singolo (Data e Ora)</option>
-                    <option value="Giornaliero">Ogni Giorno</option>
-                    <option value="Settimanale">Ogni Settimana</option>
-                    <option value="Ogni 2 settimane">Ogni 2 Settimane</option>
-                    <option value="Ogni 3 settimane">Ogni 3 Settimane</option>
-                    <option value="Mensile">Ogni Mese (Giorno fisso)</option>
-                    <option value="Annuale">Ogni Anno (Ricorrenza)</option>
-                </select>
-            </div>
-
-            <div class="space-y-3">
-                <div id="bloccoDataOra" class="space-y-1">
-                    <label class="text-sm font-semibold text-gray-700">Data e Ora di Invio</label>
-                    <input type="datetime-local" id="dataOra" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div id="bloccoGiorno" class="hidden fade-in space-y-1">
-                    <label class="text-sm font-semibold text-gray-700">Giorno della Settimana</label>
-                    <select id="giornoSettimana" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Lunedì">Lunedì</option><option value="Martedì">Martedì</option><option value="Mercoledì">Mercoledì</option><option value="Giovedì">Giovedì</option><option value="Venerdì">Venerdì</option><option value="Sabato">Sabato</option><option value="Domenica">Domenica</option>
-                    </select>
-                </div>
-
-                <div id="bloccoGiornoMese" class="hidden fade-in space-y-1">
-                    <label class="text-sm font-semibold text-gray-700">Giorno del Mese</label>
-                    <select id="giornoMese" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                </div>
-
-                <div id="bloccoAnnuale" class="hidden fade-in grid grid-cols-2 gap-2">
-                    <div class="space-y-1">
-                        <label class="text-sm font-semibold text-gray-700">Giorno</label>
-                        <select id="giornoAnnualeSelect" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-sm font-semibold text-gray-700">Mese</label>
-                        <select id="meseAnnualeSelect" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="Gennaio">Gennaio</option><option value="Febbraio">Febbraio</option><option value="Marzo">Marzo</option><option value="Aprile">Aprile</option><option value="Maggio">Maggio</option><option value="Giugno">Giugno</option><option value="Luglio">Luglio</option><option value="Agosto">Agosto</option><option value="Settembre">Settembre</option><option value="Ottobre">Ottobre</option><option value="Novembre">Novembre</option><option value="Dicembre">Dicembre</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="bloccoSoloOra" class="hidden fade-in space-y-1">
-                    <label class="text-sm font-semibold text-gray-700">Ora di Invio</label>
-                    <input type="time" id="soloOra" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-
-            <button type="submit" id="btnInvia" class="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all cursor-pointer">
-                Programma Messaggio
-            </button>
-        </form>
-    </div>
-
-    <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDfuUL68DeSagNMutnpJnrwZvttcQiG-6CipbrG_H-qy5cAh1pCr5JyKYnr_hd526I/exec";
-        
-        let canaleSelezionato = "Telegram";
-        let rubricaLocale = [];
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const selectMese = document.getElementById('giornoMese');
-            const selectGiornoAnnuale = document.getElementById('giornoAnnualeSelect');
-            for(let i=1; i<=31; i++) {
-                let opt = document.createElement('option'); opt.value = i; opt.innerText = i + "° del mese"; selectMese.appendChild(opt);
-                let optAnn = document.createElement('option'); optAnn.value = i; optAnn.innerText = i; selectGiornoAnnuale.appendChild(optAnn);
-            }
-
-            fetch(WEB_APP_URL, { method: "GET", redirect: "follow" })
-            .then(res => res.json())
-            .then(data => { 
-                rubricaLocale = data; 
-                console.log("Rubrica caricata. Righe ricevute: " + data.length);
-            })
-            .catch(err => console.error("Errore nel caricamento della rubrica: ", err));
+            const dataOraInput = document.getElementById('dataOra');
+            const oraAttuale = new Date();
+            oraAttuale.setMinutes(oraAttuale.getMinutes() - oraAttuale.getTimezoneOffset());
+            dataOraInput.value = oraAttuale.toISOString().slice(0, 16);
+        })
+        .catch(err => {
+            alert('Si è verificato un errore durante il salvataggio: ' + err);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Programma Messaggio";
         });
+    });
+</script>
 
-        function selezionaCanale(canale) {
-            canaleSelezionato = canale;
-            const btnTG = document.getElementById('btnTelegram'); const btnWA = document.getElementById('btnWhatsApp'); const btnML = document.getElementById('btnMail');
-            const campoWA = document.getElementById('campoWhatsApp'); const bloccoML = document.getElementById('bloccoMail'); const campoAll = document.getElementById('campoAllegato');
-            const btnInvia = document.getElementById('btnInvia'); const labelMsg = document.getElementById('labelMessaggio');
-
-            const classeInattivo = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-gray-200 text-gray-500 font-semibold text-xs cursor-pointer transition-all hover:bg-gray-50";
-            btnTG.className = classeInattivo; btnWA.className = classeInattivo; btnML.className = classeInattivo;
-            campoWA.classList.add('hidden'); bloccoML.classList.add('hidden'); campoAll.classList.add('hidden');
-
-            if (canale === 'Telegram') {
-                btnTG.className = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-600 font-semibold text-xs cursor-pointer transition-all";
-                campoAll.classList.remove('hidden'); labelMsg.innerText = "Testo del Messaggio";
-                btnInvia.className = "w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 cursor-pointer";
-            } else if (canale === 'WhatsApp') {
-                btnWA.className = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-green-500 bg-green-50 text-green-600 font-semibold text-xs cursor-pointer transition-all";
-                campoWA.classList.remove('hidden'); labelMsg.innerText = "Testo del Messaggio";
-                btnInvia.className = "w-full py-3.5 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 cursor-pointer";
-            } else if (canale === 'Mail') {
-                btnML.className = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-purple-500 bg-purple-50 text-purple-600 font-semibold text-xs cursor-pointer transition-all";
-                bloccoML.classList.remove('hidden'); labelMsg.innerText = "Corpo della Mail";
-                btnInvia.className = "w-full py-3.5 bg-purple-600 text-white font-bold rounded-xl shadow-md hover:bg-purple-700 cursor-pointer";
-            }
-        }
-
-        function cercaInRubrica(query, tipo) {
-            const divSuggerimenti = document.getElementById(tipo === 'WA' ? 'suggerimentiWA' : 'suggerimentiMail');
-            if (!query || query.trim().length < 2) { divSuggerimenti.classList.add('hidden'); return; }
-            const q = query.toLowerCase();
-            const filtrati = rubricaLocale.filter(c => c.nome.toLowerCase().includes(q) || (tipo === 'WA' ? c.telefono.includes(q) : c.email.toLowerCase().includes(q)));
-            if (filtrati.length === 0) { divSuggerimenti.classList.add('hidden'); return; }
-            divSuggerimenti.innerHTML = "";
-            filtrati.forEach(c => {
-                const item = document.createElement('div'); item.className = "p-3 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-100";
-                const sottoDato = tipo === 'WA' ? c.telefono : c.email;
-                item.innerHTML = `<strong>${c.nome}</strong><br><span class="text-xs text-gray-500">${sottoDato || ''}</span>`;
-                item.onclick = () => {
-                    if (tipo === 'WA') { 
-                        document.getElementById('searchWA').value = c.nome; 
-                        document.getElementById('whatsappNumber').value = c.telefono; 
-                    } else { 
-                        document.getElementById('searchMail').value = c.nome; 
-                        document.getElementById('emailDestinatario').value = c.email; 
-                    }
-                    divSuggerimenti.classList.add('hidden');
-                };
-                divSuggerimenti.appendChild(item);
-            });
-            divSuggerimenti.classList.remove('hidden');
-        }
-
-        function gestisciFrequenza() {
-            const freq = document.getElementById('frequenza').value;
-            const bDataOra = document.getElementById('bloccoDataOra'); const bGiorno = document.getElementById('bloccoGiorno'); 
-            const bGiornoMese = document.getElementById('bloccoGiornoMese'); const bAnnuale = document.getElementById('bloccoAnnuale'); const bSoloOra = document.getElementById('bloccoSoloOra');
-
-            bDataOra.classList.add('hidden'); bGiorno.classList.add('hidden'); bGiornoMese.classList.add('hidden'); bAnnuale.classList.add('hidden'); bSoloOra.classList.add('hidden');
-
-            if (freq === 'Singolo') { bDataOra.classList.remove('hidden'); } 
-            else if (freq === 'Giornaliero') { bSoloOra.classList.remove('hidden'); } 
-            else if (freq === 'Settimanale' || freq === 'Ogni 2 settimane' || freq === 'Ogni 3 settimane') { bGiorno.classList.remove('hidden'); bSoloOra.classList.remove('hidden'); } 
-            else if (freq === 'Mensile') { bGiornoMese.classList.remove('hidden'); bSoloOra.classList.remove('hidden'); } 
-            else if (freq === 'Annuale') { bAnnuale.classList.remove('hidden'); bSoloOra.classList.remove('hidden'); }
-        }
-
-        document.getElementById('messageForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnInvia'); btn.disabled = true; btn.innerText = "Salvataggio...";
-            const frequenza = document.getElementById('frequenza').value;
-            let dataOraFormattata = ""; let giornoOraValore = "-";
-
-            if (frequenza === "Singolo") {
-                const rawDateTime = document.getElementById('dataOra').value;
-                if(!rawDateTime) { alert("Inserisci una Data e Ora valida."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
-                dataOraFormattata = rawDateTime.replace("T", " ");
-            } else {
-                const ora = document.getElementById('soloOra').value;
-                if(!ora) { alert("Inserisci l'ora di invio."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
-                dataOraFormattata = "Ogni " + ora;
-                
-                if (frequenza === "Settimanale" || frequenza === "Ogni 2 settimane" || frequenza === "Ogni 3 settimane") {
-                    giornoOraValore = document.getElementById('giornoSettimana').value;
-                } else if (frequenza === "Mensile") {
-                    giornoOraValore = document.getElementById('giornoMese').value + "° giorno";
-                } else if (frequenza === "Annuale") {
-                    giornoOraValore = document.getElementById('giornoAnnualeSelect').value + " " + document.getElementById('meseAnnualeSelect').value;
-                }
-            }
-
-            let waVal = canaleSelezionato === "WhatsApp" ? (document.getElementById('whatsappNumber').value || document.getElementById('searchWA').value) : "";
-            let mailVal = canaleSelezionato === "Mail" ? (document.getElementById('emailDestinatario').value || document.getElementById('searchMail').value) : "";
-
-            // MODIFICA CRUCIALE: Inviamo i parametri come Form Standard URL encoded compatibile al 100% con no-cors e Apps Script e.parameter
-            const params = new URLSearchParams();
-            params.append('canale', canaleSelezionato);
-            params.append('messaggio', document.getElementById('messaggio').value);
-            params.append('allegato', canaleSelezionato === "Telegram" ? document.getElementById('allegato').value : "");
-            params.append('whatsapp', waVal);
-            params.append('destinatarioMail', mailVal);
-            params.append('oggettoMail', canaleSelezionato === "Mail" ? document.getElementById('emailOggetto').value : "");
-            params.append('dataOra', dataOraFormattata);
-            params.append('frequenza', frequenza);
-            params.append('giornoOra', giornoOraValore);
-
-            fetch(WEB_APP_URL, { 
-                method: "POST", 
-                mode: "no-cors", 
-                cache: "no-cache",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
-                body: params.toString()
-            })
-            .then(() => {
-                alert("Messaggio programmato con successo!");
-                document.getElementById('messageForm').reset();
-                document.getElementById('whatsappNumber').value = ""; 
-                document.getElementById('emailDestinatario').value = "";
-                selezionaCanale(canaleSelezionato); 
-                gestisciFrequenza();
-            })
-            .catch(err => alert("Errore durante il salvataggio: " + err))
-            .finally(() => { btn.disabled = false; btn.innerText = "Programma Messaggio"; });
-        });
-    </script>
 </body>
 </html>

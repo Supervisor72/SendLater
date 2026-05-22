@@ -1,226 +1,274 @@
-// ==========================================
-// CONFIGURAZIONE PARAMETRI GENERALI
-// ==========================================
-const TELEGRAM_TOKEN = "8820036774:AAGNIYJxcMjn87wh_OOx0E1bq6CBqbFcwQ8";
-const CHAT_ID = "-1001301586040";        // Canale di lavoro (Solo messaggi Telegram)
-const MIA_CHAT_PRIVATA = "30945887";     // Il tuo ID privato (Per notifiche WA e Mail)
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pianificatore Smart</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .suggerimenti-list::-webkit-scrollbar { width: 4px; }
+        .suggerimenti-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-// Nomi dei fogli nativi secondo la tua struttura
-const FOGLIO_TG = "Foglio1";
-const FOGLIO_WA = "Foglio2";
-const FOGLIO_MAIL = "Foglio3";
-const FOGLIO_RUBRICA = "Foglio4";
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 space-y-5">
+        
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-800">Pianifica Messaggio</h1>
+            <p class="text-sm text-gray-500 mt-1">Scegli canale, destinatario e frequenza</p>
+        </div>
 
-// ==========================================
-// 1. GESTIONE RICHIESTE IN ENTRATA (API)
-// ==========================================
+        <div class="grid grid-cols-3 gap-2">
+            <button id="btnTelegram" onclick="selezionaCanale('Telegram')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-600 font-semibold text-xs cursor-pointer transition-all">
+                <span class="text-lg mb-1">✈️</span>Telegram
+            </button>
+            <button id="btnWhatsApp" onclick="selezionaCanale('WhatsApp')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-gray-200 text-gray-500 font-semibold text-xs cursor-pointer transition-all hover:bg-gray-50">
+                <span class="text-lg mb-1">🟢</span>WhatsApp
+            </button>
+            <button id="btnMail" onclick="selezionaCanale('Mail')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-gray-200 text-gray-500 font-semibold text-xs cursor-pointer transition-all hover:bg-gray-50">
+                <span class="text-lg mb-1">📧</span>Email
+            </button>
+        </div>
 
-// GET: Scarica la rubrica dal Foglio4 e la passa al sito GitHub
-function doGet() {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var foglio = ss.getSheetByName(FOGLIO_RUBRICA);
-    if (!foglio) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
-    
-    var dati = foglio.getDataRange().getValues();
-    var rubrica = [];
-    
-    for (var i = 1; i < dati.length; i++) {
-      if (dati[i][0]) {
-        rubrica.push({
-          nome: dati[i][0].toString().trim(),
-          telefono: dati[i][1] ? dati[i][1].toString().trim() : "",
-          email: dati[i][2] ? dati[i][2].toString().trim() : ""
+        <form id="messageForm" class="space-y-4">
+            
+            <div id="campoWhatsApp" class="hidden fade-in space-y-1 relative">
+                <label class="text-sm font-semibold text-gray-700">Destinatario WhatsApp (Cerca in Rubrica o digita numero)</label>
+                <input type="text" id="searchWA" placeholder="Inizia a digitare il nome o numero..." oninput="cercaInRubrica(this.value, 'WA')" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input type="hidden" id="whatsappNumber">
+                <div id="suggerimentiWA" class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden suggerimenti-list"></div>
+            </div>
+
+            <div id="bloccoMail" class="hidden fade-in space-y-3">
+                <div class="space-y-1 relative">
+                    <label class="text-sm font-semibold text-gray-700">Destinatario Email (Cerca in Rubrica o digita email)</label>
+                    <input type="text" id="searchMail" placeholder="Inizia a digitare il nome o email..." oninput="cercaInRubrica(this.value, 'Mail')" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <input type="hidden" id="emailDestinatario">
+                    <div id="suggerimentiMail" class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden suggerimenti-list"></div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-sm font-semibold text-gray-700">Oggetto dell'Email</label>
+                    <input type="text" id="emailOggetto" placeholder="Inserisci l'oggetto..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label id="labelMessaggio" class="text-sm font-semibold text-gray-700">Testo del Messaggio</label>
+                <textarea id="messaggio" rows="4" required placeholder="Scrivi il testo qui..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div id="campoAllegato" class="space-y-1">
+                <label class="text-sm font-semibold text-gray-700">Link Immagine Allegata (Opzionale)</label>
+                <input type="url" id="allegato" placeholder="https://esempio.com/immagine.jpg" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-sm font-semibold text-gray-700">Frequenza Invio</label>
+                <select id="frequenza" onchange="gestisciFrequenza()" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="Singolo">Invio Singolo (Data e Ora)</option>
+                    <option value="Giornaliero">Ogni Giorno</option>
+                    <option value="Settimanale">Ogni Settimana</option>
+                    <option value="Ogni 2 settimane">Ogni 2 Settimane</option>
+                    <option value="Ogni 3 settimane">Ogni 3 Settimane</option>
+                    <option value="Mensile">Ogni Mese (Giorno fisso)</option>
+                    <option value="Annuale">Ogni Anno (Ricorrenza)</option>
+                </select>
+            </div>
+
+            <div class="space-y-3">
+                <div id="bloccoDataOra" class="space-y-1">
+                    <label class="text-sm font-semibold text-gray-700">Data e Ora di Invio</label>
+                    <input type="datetime-local" id="dataOra" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div id="bloccoGiorno" class="hidden fade-in space-y-1">
+                    <label class="text-sm font-semibold text-gray-700">Giorno della Settimana</label>
+                    <select id="giornoSettimana" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Lunedì">Lunedì</option><option value="Martedì">Martedì</option><option value="Mercoledì">Mercoledì</option><option value="Giovedì">Giovedì</option><option value="Venerdì">Venerdì</option><option value="Sabato">Sabato</option><option value="Domenica">Domenica</option>
+                    </select>
+                </div>
+
+                <div id="bloccoGiornoMese" class="hidden fade-in space-y-1">
+                    <label class="text-sm font-semibold text-gray-700">Giorno del Mese</label>
+                    <select id="giornoMese" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                </div>
+
+                <div id="bloccoAnnuale" class="hidden fade-in grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="text-sm font-semibold text-gray-700">Giorno</label>
+                        <select id="giornoAnnualeSelect" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-semibold text-gray-700">Mese</label>
+                        <select id="meseAnnualeSelect" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Gennaio">Gennaio</option><option value="Febbraio">Febbraio</option><option value="Marzo">Marzo</option><option value="Aprile">Aprile</option><option value="Maggio">Maggio</option><option value="Giugno">Giugno</option><option value="Luglio">Luglio</option><option value="Agosto">Agosto</option><option value="Settembre">Settembre</option><option value="Ottobre">Ottobre</option><option value="Novembre">Novembre</option><option value="Dicembre">Dicembre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="bloccoSoloOra" class="hidden fade-in space-y-1">
+                    <label class="text-sm font-semibold text-gray-700">Ora di Invio</label>
+                    <input type="time" id="soloOra" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <button type="submit" id="btnInvia" class="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all cursor-pointer">
+                Programma Messaggio
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDfuUL68DeSagNMutnpJnrwZvttcQiG-6CipbrG_H-qy5cAh1pCr5JyKYnr_hd526I/exec";
+        
+        let canaleSelezionato = "Telegram";
+        let rubricaLocale = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const selectMese = document.getElementById('giornoMese');
+            const selectGiornoAnnuale = document.getElementById('giornoAnnualeSelect');
+            for(let i=1; i<=31; i++) {
+                let opt = document.createElement('option'); opt.value = i; opt.innerText = i + "° del mese"; selectMese.appendChild(opt);
+                let optAnn = document.createElement('option'); optAnn.value = i; optAnn.innerText = i; selectGiornoAnnuale.appendChild(optAnn);
+            }
+
+            fetch(WEB_APP_URL, { method: "GET", redirect: "follow" })
+            .then(res => res.json())
+            .then(data => { 
+                rubricaLocale = data; 
+                console.log("Rubrica caricata. Righe ricevute: " + data.length);
+            })
+            .catch(err => console.error("Errore nel caricamento della rubrica: ", err));
         });
-      }
-    }
-    return ContentService.createTextOutput(JSON.stringify(rubrica)).setMimeType(ContentService.MimeType.JSON);
-  } catch (e) {
-    return ContentService.createTextOutput(JSON.stringify({ error: e.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
 
-// POST: Riceve i dati dal sito e li smista in modo intelligente basandosi sui campi compilati
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var foglio;
-    
-    // CONTROLLO INTELLIGENTE: Capisce il canale dai dati reali inseriti, ignorando bug del form
-    var canaleEffettivo = data.canale;
-    
-    if (data.destinatarioMail && data.destinatarioMail.trim() !== "") {
-      canaleEffettivo = "Mail";
-    } else if (data.whatsapp && data.whatsapp.trim() !== "") {
-      canaleEffettivo = "WhatsApp";
-    } else {
-      canaleEffettivo = "Telegram";
-    }
-    
-    // SMISTAMENTO NEI FOGLI IN BASE AL CANALE RILEVATO
-    if (canaleEffettivo === "Telegram") {
-      foglio = ss.getSheetByName(FOGLIO_TG); // Foglio1
-      if (!foglio) return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Foglio1 non trovato" }));
-      foglio.appendRow([data.messaggio, data.allegato || "", data.dataOra, data.frequenza, data.giornoOra, "In attesa"]);
-    } 
-    else if (canaleEffettivo === "WhatsApp") {
-      foglio = ss.getSheetByName(FOGLIO_WA); // Foglio2
-      if (!foglio) return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Foglio2 non trovato" }));
-      foglio.appendRow([data.messaggio, data.whatsapp || "", data.dataOra, data.frequenza, data.giornoOra, "In attesa"]);
-    } 
-    else if (canaleEffettivo === "Mail") {
-      foglio = ss.getSheetByName(FOGLIO_MAIL); // Foglio3
-      if (!foglio) return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Foglio3 non trovato" }));
-      foglio.appendRow([data.messaggio, data.destinatarioMail || "", data.oggettoMail || "", data.dataOra, data.frequenza, data.giornoOra, "In attesa"]);
-    }
-    
-    return ContentService.createTextOutput(JSON.stringify({ status: "success", canaleRilevato: canaleEffettivo }));
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }));
-  }
-}
+        function selezionaCanale(canale) {
+            canaleSelezionato = ...; // Impostato correttamente dalla funzione
+            canaleSelezionato = canale;
+            const btnTG = document.getElementById('btnTelegram'); const btnWA = document.getElementById('btnWhatsApp'); const btnML = document.getElementById('btnMail');
+            const campoWA = document.getElementById('campoWhatsApp'); const bloccoML = document.getElementById('bloccoMail'); const campoAll = document.getElementById('campoAllegato');
+            const btnInvia = document.getElementById('btnInvia'); const labelMsg = document.getElementById('labelMessaggio');
 
-// ==========================================
-// 2. MOTORE DI CONTROLLO AUTOMATICO (CRON)
-// ==========================================
+            const classeInattivo = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-gray-200 text-gray-500 font-semibold text-xs cursor-pointer transition-all hover:bg-gray-50";
+            btnTG.className = classeInattivo; btnWA.className = classeInattivo; btnML.className = classeInattivo;
+            campoWA.classList.add('hidden'); bloccoML.classList.add('hidden'); campoAll.classList.add('hidden');
 
-function verificaEInviaMessaggi() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var oraAttuale = new Date();
-  
-  var giorniSettimanaIta = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
-  var mesiIta = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-  
-  var giornoSettimanaCorrente = giorniSettimanaIta[oraAttuale.getDay()];
-  var giornoMeseCorrente = oraAttuale.getDate();
-  var meseCorrente = mesiIta[oraAttuale.getMonth()];
-
-  // --- 1. CONTROLLO TELEGRAM (Foglio1) ---
-  var fTG = ss.getSheetByName(FOGLIO_TG);
-  if (fTG) {
-    var dTG = fTG.getDataRange().getValues();
-    for (var i = dTG.length - 1; i >= 1; i--) {
-      if (dTG[i][5] === "Inviato") continue; // Colonna F
-      if (validaTempo(dTG[i][2], dTG[i][3], dTG[i][4], oraAttuale, giornoSettimanaCorrente, giornoMeseCorrente, meseCorrente)) {
-        if (inviaTelegram(CHAT_ID, dTG[i][0], dTG[i][1])) {
-          fTG.getRange(i + 1, 6).setValue(dTG[i][3] === "Singolo" ? "Inviato" : "Ultimo invio: " + Utilities.formatDate(oraAttuale, "Europe/Rome", "dd/MM/yyyy HH:mm"));
+            if (canale === 'Telegram') {
+                btnTG.className = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-600 font-semibold text-xs cursor-pointer transition-all";
+                campoAll.classList.remove('hidden'); labelMsg.innerText = "Testo del Messaggio";
+                btnInvia.className = "w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 cursor-pointer";
+            } else if (canale === 'WhatsApp') {
+                btnWA.className = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-green-500 bg-green-50 text-green-600 font-semibold text-xs cursor-pointer transition-all";
+                campoWA.classList.remove('hidden'); labelMsg.innerText = "Testo del Messaggio";
+                btnInvia.className = "w-full py-3.5 bg-green-600 text-white font-bold rounded-xl shadow-md hover:bg-green-700 cursor-pointer";
+            } else if (canale === 'Mail') {
+                btnML.className = "flex flex-col items-center justify-center py-3 rounded-xl border-2 border-purple-500 bg-purple-50 text-purple-600 font-semibold text-xs cursor-pointer transition-all";
+                bloccoML.classList.remove('hidden'); labelMsg.innerText = "Corpo della Mail";
+                btnInvia.className = "w-full py-3.5 bg-purple-600 text-white font-bold rounded-xl shadow-md hover:bg-purple-700 cursor-pointer";
+            }
         }
-      }
-    }
-  }
 
-  // --- 2. CONTROLLO WHATSAPP (Foglio2) ---
-  var fWA = ss.getSheetByName(FOGLIO_WA);
-  if (fWA) {
-    var dWA = fWA.getDataRange().getValues();
-    for (var i = dWA.length - 1; i >= 1; i--) {
-      if (dWA[i][5] === "Inviato") continue; // Colonna F
-      if (validaTempo(dWA[i][2], dWA[i][3], dWA[i][4], oraAttuale, giornoSettimanaCorrente, giornoMeseCorrente, meseCorrente)) {
-        if (gestisciNotificaWhatsApp(dWA[i][0], dWA[i][1])) {
-          fWA.getRange(i + 1, 6).setValue(dWA[i][3] === "Singolo" ? "Inviato" : "Ultimo invio: " + Utilities.formatDate(oraAttuale, "Europe/Rome", "dd/MM/yyyy HH:mm"));
+        function cercaInRubrica(query, tipo) {
+            const divSuggerimenti = document.getElementById(tipo === 'WA' ? 'suggerimentiWA' : 'suggerimentiMail');
+            if (!query || query.trim().length < 2) { divSuggerimenti.classList.add('hidden'); return; }
+            const q = query.toLowerCase();
+            const filtrati = rubricaLocale.filter(c => c.nome.toLowerCase().includes(q) || (tipo === 'WA' ? c.telefono.includes(q) : c.email.toLowerCase().includes(q)));
+            if (filtrati.length === 0) { divSuggerimenti.classList.add('hidden'); return; }
+            divSuggerimenti.innerHTML = "";
+            filtrati.forEach(c => {
+                const item = document.createElement('div'); item.className = "p-3 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-100";
+                const sottoDato = tipo === 'WA' ? c.telefono : c.email;
+                item.innerHTML = `<strong>${c.nome}</strong><br><span class="text-xs text-gray-500">${sottoDato || ''}</span>`;
+                item.onclick = () => {
+                    if (tipo === 'WA') { 
+                        document.getElementById('searchWA').value = c.nome; 
+                        document.getElementById('whatsappNumber').value = c.telefono; 
+                    } else { 
+                        document.getElementById('searchMail').value = c.nome; 
+                        document.getElementById('emailDestinatario').value = c.email; 
+                    }
+                    divSuggerimenti.classList.add('hidden');
+                };
+                divSuggerimenti.appendChild(item);
+            });
+            divSuggerimenti.classList.remove('hidden');
         }
-      }
-    }
-  }
 
-  // --- 3. CONTROLLO MAIL (Foglio3) ---
-  var fMAIL = ss.getSheetByName(FOGLIO_MAIL);
-  if (fMAIL) {
-    var dMAIL = fMAIL.getDataRange().getValues();
-    for (var i = dMAIL.length - 1; i >= 1; i--) {
-      if (dMAIL[i][6] === "Inviato") continue; // Colonna G
-      if (validaTempo(dMAIL[i][3], dMAIL[i][4], dMAIL[i][5], oraAttuale, giornoSettimanaCorrente, giornoMeseCorrente, meseCorrente)) {
-        if (inviaMail(dMAIL[i][1], dMAIL[i][2] || "Nessun Oggetto", dMAIL[i][0])) {
-          inviaTelegram(MIA_CHAT_PRIVATA, "📧 **Notifica Invio Email** 📧\n\nSpedita correttamente a: " + dMAIL[i][1] + "\nOggetto: " + (dMAIL[i][2] || "-") + "\n\nTesto:\n" + dMAIL[i][0]);
-          fMAIL.getRange(i + 1, 7).setValue(dMAIL[i][4] === "Singolo" ? "Inviato" : "Ultimo invio: " + Utilities.formatDate(oraAttuale, "Europe/Rome", "dd/MM/yyyy HH:mm"));
+        function gestisciFrequenza() {
+            const freq = document.getElementById('frequenza').value;
+            const bDataOra = document.getElementById('bloccoDataOra'); const bGiorno = document.getElementById('bloccoGiorno'); 
+            const bGiornoMese = document.getElementById('bloccoGiornoMese'); const bAnnuale = document.getElementById('bloccoAnnuale'); const bSoloOra = document.getElementById('bloccoSoloOra');
+
+            bDataOra.classList.add('hidden'); bGiorno.classList.add('hidden'); bGiornoMese.classList.add('hidden'); bAnnuale.classList.add('hidden'); bSoloOra.classList.add('hidden');
+
+            if (freq === 'Singolo') { bDataOra.classList.remove('hidden'); } 
+            else if (freq === 'Giornaliero') { bSoloOra.classList.remove('hidden'); } 
+            else if (freq === 'Settimanale' || freq === 'Ogni 2 settimane' || freq === 'Ogni 3 settimane') { bGiorno.classList.remove('hidden'); bSoloOra.classList.remove('hidden'); } 
+            else if (freq === 'Mensile') { bGiornoMese.classList.remove('hidden'); bSoloOra.classList.remove('hidden'); } 
+            else if (freq === 'Annuale') { bAnnuale.classList.remove('hidden'); bSoloOra.classList.remove('hidden'); }
         }
-      }
-    }
-  }
-}
 
-// Funzione di validazione temporale
-function validaTempo(dataOraPianificata, frequenza, giornoOraDettaglio, oraAttuale, giornoSettimanaCorrente, giornoMeseCorrente, meseCorrente) {
-  if (!dataOraPianificata) return false;
-  var dataOraStr = dataOraPianificata.toString().trim();
-  var dettaglioStr = giornoOraDettaglio ? giornoOraDettaglio.toString().trim() : "";
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnInvia'); btn.disabled = true; btn.innerText = "Salvataggio...";
+            const frequenza = document.getElementById('frequenza').value;
+            let dataOraFormattata = ""; let giornoOraValore = "-";
 
-  if (frequenza === "Singolo") {
-    var dataPianificata = new Date(dataOraStr.replace("-", "/"));
-    return (!isNaN(dataPianificata.getTime()) && oraAttuale >= dataPianificata);
-  } 
-  
-  if (dataOraStr.startsWith("Ogni ")) {
-    var oraPianificataStr = dataOraStr.replace("Ogni ", "").trim();
-    var partiOra = oraPianificataStr.split(":");
-    if (partiOra.length === 2) {
-      var momentoPianificatoOggi = new Date(); 
-      momentoPianificatoOggi.setHours(parseInt(partiOra[0], 10), parseInt(partiOra[1], 10), 0, 0);
-      
-      if (oraAttuale >= momentoPianificatoOggi) {
-        if (frequenza === "Giornaliero") return true;
-        if ((frequenza === "Settimanale" || frequenza === "Ogni 2 settimane" || frequenza === "Ogni 3 settimane") && dettaglioStr === giornoSettimanaCorrente) return true;
-        if (frequenza === "Mensile" && dettaglioStr === (giornoMeseCorrente + "° giorno")) return true;
-        if (frequenza === "Annuale" && dettaglioStr === (giornoMeseCorrente + " " + meseCorrente)) return true;
-      }
-    }
-  }
-  return false;
-}
+            if (frequenza === "Singolo") {
+                const rawDateTime = document.getElementById('dataOra').value;
+                if(!rawDateTime) { alert("Inserisci una Data e Ora valida."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
+                dataOraFormattata = rawDateTime.replace("T", " ");
+            } else {
+                const ora = document.getElementById('soloOra').value;
+                if(!ora) { alert("Inserisci l'ora di invio."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
+                dataOraFormattata = "Ogni " + ora;
+                
+                if (frequenza === "Settimanale" || frequenza === "Ogni 2 settimane" || frequenza === "Ogni 3 settimane") {
+                    giornoOraValore = document.getElementById('giornoSettimana').value;
+                } else if (frequenza === "Mensile") {
+                    giornoOraValore = document.getElementById('giornoMese').value + "° giorno";
+                } else if (frequenza === "Annuale") {
+                    giornoOraValore = document.getElementById('giornoAnnualeSelect').value + " " + document.getElementById('meseAnnualeSelect').value;
+                }
+            }
 
-// ==========================================
-// 3. FUNZIONI DI INVIO REALE
-// ==========================================
+            // CORREZIONE ACQUISIZIONE DATI: Se scritti a mano, prende il valore diretto dal box di ricerca
+            let waVal = canaleSelezionato === "WhatsApp" ? (document.getElementById('whatsappNumber').value || document.getElementById('searchWA').value) : "";
+            let mailVal = canaleSelezionato === "Mail" ? (document.getElementById('emailDestinatario').value || document.getElementById('searchMail').value) : "";
 
-function inviaTelegram(chatTarget, testo, allegato) {
-  var metodo = "sendMessage";
-  var payload = { "chat_id": chatTarget, "text": testo, "parse_mode": "Markdown" };
-  
-  if (allegato && allegato.trim() !== "") {
-    metodo = "sendPhoto";
-    payload = { "chat_id": chatTarget, "photo": allegato, "caption": testo, "parse_mode": "Markdown" };
-  }
-  
-  var options = { "method": "post", "contentType": "application/json", "payload": JSON.stringify(payload), "muteHttpExceptions": true };
-  try {
-    var response = UrlFetchApp.fetch("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/" + metodo, options);
-    return JSON.parse(response.getContentText()).ok;
-  } catch (e) {
-    Logger.log("Errore Telegram: " + e.toString());
-    return false;
-  }
-}
+            const payload = {
+                canale: canaleSelezionato, 
+                messaggio: document.getElementById('messaggio').value,
+                allegato: canaleSelezionato === "Telegram" ? document.getElementById('allegato').value : "",
+                whatsapp: waVal, 
+                destinatarioMail: mailVal, 
+                oggettoMail: canaleSelezionato === "Mail" ? document.getElementById('emailOggetto').value : "",
+                dataOra: dataOraFormattata, 
+                frequenza: frequenza, 
+                giornoOra: giornoOraValore
+            };
 
-function gestisciNotificaWhatsApp(testo, numero) {
-  var numPulito = numero.toString().replace(/\D/g, '');
-  if (!numPulito.startsWith('39') && numPulito.length === 10) numPulito = '39' + numPulito;
-  
-  var urlWhatsApp = "https://wa.me/" + numPulito + "?text=" + encodeURIComponent(testo);
-  var testoNotifica = "🟢 **PROMEMORIA INVIO WHATSAPP** 🟢\n\nÈ il momento di trasmettere il messaggio per:\n👤 **Contatto:** +" + numPulito + "\n\n📝 **Testo:**\n_" + testo + "_\n\n👇 Apri la chat precompilata:";
-  
-  var payload = { 
-    "chat_id": MIA_CHAT_PRIVATA, 
-    "text": testoNotifica, 
-    "parse_mode": "Markdown", 
-    "reply_markup": JSON.stringify({ "inline_keyboard": [[{ "text": "🚀 Apri e Invia su WhatsApp", "url": urlWhatsApp }]] }) 
-  };
-  
-  var options = { "method": "post", "contentType": "application/json", "payload": JSON.stringify(payload), "muteHttpExceptions": true };
-  try { 
-    var response = UrlFetchApp.fetch("https://api.telegram.org/bot" + TELEGRAM_TOKEN + "/sendMessage", options); 
-    return JSON.parse(response.getContentText()).ok; 
-  } catch (e) { 
-    return false; 
-  }
-}
-
-function inviaMail(destinatario, oggetto, corpo) {
-  try {
-    MailApp.sendEmail({ to: destinatario, subject: oggetto, body: corpo });
-    return true;
-  } catch (e) {
-    Logger.log("Errore Mail: " + e.toString());
-    return false;
-  }
-}
+            // CORREZIONE INTEGRALE FETCH: Usiamo FormData o stringa testo pura compatibile con il no-cors
+            fetch(WEB_APP_URL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                cache: "no-cache",
+                headers: { "Content-Type": "text/plain" }, // Cruciale per evitare il blocco CORS su richieste no-cors
+                body: JSON.stringify(payload) 
+            })
+            .then(() => {
+                alert("Messaggio programmato con successo!");
+                document.getElementById('messageForm').reset();
+                document.getElementById('whatsappNumber').value = ""; 
+                document.getElementById('emailDestinatario').value = "";
+                selezionaCanale(canaleSelezionato); 
+                gestisciFrequenza();
+            })
+            .catch(err => alert("Errore durante il salvataggio: " + err))
+            .finally(() => { btn.disabled = false; btn.innerText = "Programma Messaggio"; });
+        });
+    </script>
+</body>
+</html>

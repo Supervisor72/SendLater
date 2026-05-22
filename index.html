@@ -173,7 +173,8 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqeCMxn9saymZAKMudg6ZbMnFAPVgKBAnr2EoZDN4qD76Dj65taYCdDB9xfmVhPhSP/exec";
+    // Aggiornato con il tuo nuovo URL di distribuzione
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDfuUL68DeSagNMutnpJnrwZvttcQiG-6CipbrG_H-qy5cAh1pCr5JyKYnr_hd526I/exec";
 
     const frequenzaSelect = document.getElementById('frequenza');
     const giornoGroup = document.getElementById('giornoSettimanaGroup');
@@ -212,7 +213,7 @@
             allegato: document.getElementById('allegato').value,
             dataOra: document.getElementById('dataOra').value.replace('T', ' '),
             frequenza: frequenzaSelect.value,
-            giornoOra: giornoSelect.value // Questo sarà il 5° dato inviato (che finirà nella colonna F)
+            giornoOra: giornoSelect.value
         };
 
         fetch(WEB_APP_URL, {

@@ -21,6 +21,7 @@
             <p class="text-sm text-gray-500 mt-1">Scegli canale, destinatario e frequenza</p>
         </div>
 
+        <!-- SELEZIONE CANALE -->
         <div class="grid grid-cols-3 gap-2">
             <button id="btnTelegram" onclick="selezionaCanale('Telegram')" type="button" class="flex flex-col items-center justify-center py-3 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-600 font-semibold text-xs cursor-pointer transition-all">
                 <span class="text-lg mb-1">✈️</span>Telegram
@@ -35,6 +36,7 @@
 
         <form id="messageForm" class="space-y-4">
             
+            <!-- CONTROLLO SMART WHATSAPP -->
             <div id="campoWhatsApp" class="hidden fade-in space-y-1 relative">
                 <label class="text-sm font-semibold text-gray-700">Destinatario WhatsApp (Cerca in Rubrica)</label>
                 <input type="text" id="searchWA" placeholder="Inizia a digitare il nome..." oninput="cercaInRubrica(this.value, 'WA')" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -42,6 +44,7 @@
                 <div id="suggerimentiWA" class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden suggerimenti-list"></div>
             </div>
 
+            <!-- CONTROLLO SMART MAIL -->
             <div id="bloccoMail" class="hidden fade-in space-y-3">
                 <div class="space-y-1 relative">
                     <label class="text-sm font-semibold text-gray-700">Destinatario Email (Cerca in Rubrica)</label>
@@ -55,16 +58,19 @@
                 </div>
             </div>
 
+            <!-- TESTO MESSAGGIO -->
             <div class="space-y-1">
                 <label id="labelMessaggio" class="text-sm font-semibold text-gray-700">Testo del Messaggio</label>
                 <textarea id="messaggio" rows="4" required placeholder="Scrivi il testo qui..." class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
 
+            <!-- ALLEGATO TELEGRAM -->
             <div id="campoAllegato" class="space-y-1">
                 <label class="text-sm font-semibold text-gray-700">Link Immagine Allegata (Opzionale)</label>
                 <input type="url" id="allegato" placeholder="https://esempio.com/immagine.jpg" class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
+            <!-- FREQUENZA ED ORARI -->
             <div class="space-y-1">
                 <label class="text-sm font-semibold text-gray-700">Frequenza Invio</label>
                 <select id="frequenza" onchange="gestisciFrequenza()" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -78,6 +84,7 @@
                 </select>
             </div>
 
+            <!-- CONTENITORI DINAMICI ORARI -->
             <div class="space-y-3">
                 <div id="bloccoDataOra" class="space-y-1">
                     <label class="text-sm font-semibold text-gray-700">Data e Ora di Invio</label>
@@ -96,6 +103,7 @@
                     <select id="giornoMese" class="w-full p-3 rounded-xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
                 </div>
 
+                <!-- BLOCCO ANNUALE CON MESE E GIORNO -->
                 <div id="bloccoAnnuale" class="hidden fade-in grid grid-cols-2 gap-2">
                     <div class="space-y-1">
                         <label class="text-sm font-semibold text-gray-700">Giorno</label>
@@ -136,7 +144,14 @@
                 let optAnn = document.createElement('option'); optAnn.value = i; optAnn.innerText = i; selectGiornoAnnuale.appendChild(optAnn);
             }
 
-            fetch(WEB_APP_URL).then(res => res.json()).then(data => { rubricaLocale = data; }).catch(err => console.error(err));
+            // CORREZIONE RUBRICA: Forziamo il redirect pulito per caricare i dati da Apps Script
+            fetch(WEB_APP_URL, { method: "GET", redirect: "follow" })
+            .then(res => res.json())
+            .then(data => { 
+                rubricaLocale = data; 
+                console.log("Rubrica caricata correttamente. Righe ricevute: " + data.length);
+            })
+            .catch(err => console.error("Errore nel caricamento della rubrica: ", err));
         });
 
         function selezionaCanale(canale) {
@@ -176,8 +191,13 @@
                 const sottoDato = tipo === 'WA' ? c.telefono : c.email;
                 item.innerHTML = `<strong>${c.nome}</strong><br><span class="text-xs text-gray-500">${sottoDato || ''}</span>`;
                 item.onclick = () => {
-                    if (tipo === 'WA') { document.getElementById('searchWA').value = c.nome; document.getElementById('whatsappNumber').value = c.telefono || c.nome; } 
-                    else { document.getElementById('searchMail').value = c.nome; document.getElementById('emailDestinatario').value = c.email || c.nome; }
+                    if (tipo === 'WA') { 
+                        document.getElementById('searchWA').value = c.nome; 
+                        document.getElementById('whatsappNumber').value = c.telefono || c.nome; 
+                    } else { 
+                        document.getElementById('searchMail').value = c.nome; 
+                        document.getElementById('emailDestinatario').value = c.email || c.nome; 
+                    }
                     divSuggerimenti.classList.add('hidden');
                 };
                 divSuggerimenti.appendChild(item);
@@ -205,13 +225,14 @@
             const frequenza = document.getElementById('frequenza').value;
             let dataOraFormattata = ""; let giornoOraValore = "-";
 
+            // CORREZIONE LOGICA ORARI VALIDAZIONE: Separiamo nettamente l'invio singolo dai ricorrenti
             if (frequenza === "Singolo") {
                 const rawDateTime = document.getElementById('dataOra').value;
-                if(!rawDateTime) { alert("Data non valida."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
+                if(!rawDateTime) { alert("Inserisci una Data e Ora valida per l'invio singolo."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
                 dataOraFormattata = rawDateTime.replace("T", " ");
             } else {
                 const ora = document.getElementById('soloOra').value;
-                if(!ora) { alert("Inserisci l'orario."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
+                if(!ora) { alert("Inserisci l'ora di invio."); btn.disabled = false; btn.innerText = "Programma Messaggio"; return; }
                 dataOraFormattata = "Ogni " + ora;
                 
                 if (frequenza === "Settimanale" || frequenza === "Ogni 2 settimane" || frequenza === "Ogni 3 settimane") {
@@ -219,7 +240,6 @@
                 } else if (frequenza === "Mensile") {
                     giornoOraValore = document.getElementById('giornoMese').value + "° giorno";
                 } else if (frequenza === "Annuale") {
-                    // SCRIVE DIRETTAMENTE NEL FOGLIO ES: "15 Marzo"
                     giornoOraValore = document.getElementById('giornoAnnualeSelect').value + " " + document.getElementById('meseAnnualeSelect').value;
                 }
             }
@@ -241,7 +261,7 @@
                 document.getElementById('whatsappNumber').value = ""; document.getElementById('emailDestinatario').value = "";
                 selezionaCanale(canaleSelezionato); gestisciFrequenza();
             })
-            .catch(err => alert("Errore: " + err)).finally(() => { btn.disabled = false; btn.innerText = "Programma Messaggio"; });
+            .catch(err => alert("Errore durante il salvataggio: " + err)).finally(() => { btn.disabled = false; btn.innerText = "Programma Messaggio"; });
         });
     </script>
 </body>

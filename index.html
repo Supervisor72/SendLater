@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Programmatore Telegram</title>
     
+    <!-- Configurazione per renderla una Web App a schermo intero su iOS e Android -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
@@ -138,7 +139,7 @@
         </div>
         
         <div class="form-group">
-            <label for="dataOra">Data e Ora di Invio (Punto di Partenza)</label>
+            <label for="dataOra">Data e Ora di Invio</label>
             <input type="datetime-local" id="dataOra" required>
         </div>
         
@@ -147,31 +148,24 @@
             <select id="frequenza" required>
                 <option value="Singolo">Singolo Invio</option>
                 <option value="Settimanale">Settimanale</option>
-                <option value="Quindicinale">Quindicinale (Ogni 2 settimane)</option>
+                <option value="Quindicinale">Quindicinale</option>
                 <option value="Mensile">Mensile</option>
             </select>
         </div>
 
-        <!-- Gruppo Dinamico per i dettagli del Settimanale -->
-        <div id="opzioniSettimanaliGroup" class="hidden">
-            <div class="form-group">
-                <label for="giornoSettimana">Giorno della Settimana</label>
-                <select id="giornoSettimana">
-                    <option value="">Seleziona un giorno...</option>
-                    <option value="Lunedì">Lunedì</option>
-                    <option value="Martedì">Martedì</option>
-                    <option value="Mercoledì">Mercoledì</option>
-                    <option value="Giovedì">Giovedì</option>
-                    <option value="Venerdì">Venerdì</option>
-                    <option value="Sabato">Sabato</option>
-                    <option value="Domenica">Domenica</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="intervalloSettimane">Ripeti ogni quanti settimane?</label>
-                <input type="number" id="intervalloSettimane" min="1" max="12" value="1">
-            </div>
+        <!-- Visibile solo se viene selezionato "Settimanale" -->
+        <div class="form-group hidden" id="giornoSettimanaGroup">
+            <label for="giornoSettimana">Giorno della Settimana</label>
+            <select id="giornoSettimana">
+                <option value="">Seleziona un giorno...</option>
+                <option value="Lunedì">Lunedì</option>
+                <option value="Martedì">Martedì</option>
+                <option value="Mercoledì">Mercoledì</option>
+                <option value="Giovedì">Giovedì</option>
+                <option value="Venerdì">Venerdì</option>
+                <option value="Sabato">Sabato</option>
+                <option value="Domenica">Domenica</option>
+            </select>
         </div>
         
         <button type="submit" id="submitBtn">Programma Messaggio</button>
@@ -179,14 +173,14 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwzjj9GMg1TlH9AprANpORQfPMDYzVWfB3KXWmm_5nTZP3UWU2H8eQK_foltjGzw20E/exec;
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDfuUL68DeSagNMutnpJnrwZvttcQiG-6CipbrG_H-qy5cAh1pCr5JyKYnr_hd526I/exec";
 
     const frequenzaSelect = document.getElementById('frequenza');
-    const opzioniSettimanali = document.getElementById('opzioniSettimanaliGroup');
+    const giornoGroup = document.getElementById('giornoSettimanaGroup');
     const giornoSelect = document.getElementById('giornoSettimana');
-    const intervalloInput = document.getElementById('intervalloSettimane');
     const dataOraInput = document.getElementById('dataOra');
 
+    // Funzione per impostare la data e ora attuale nel fuso orario locale
     function impostaDataAttuale() {
         const oraAttuale = new Date();
         const offset = oraAttuale.getTimezoneOffset();
@@ -194,21 +188,22 @@
         dataOraInput.value = dataLocale.toISOString().slice(0, 16);
     }
 
-    // Gestione visibilità campi per la schedulazione settimanale avanzata
+    // Gestione visibilità giorno della settimana
     frequenzaSelect.addEventListener('change', function() {
         if (this.value === 'Settimanale') {
-            opzioniSettimanali.classList.remove('hidden');
+            giornoGroup.classList.remove('hidden');
             giornoSelect.required = true;
         } else {
-            opzioniSettimanali.classList.add('hidden');
+            giornoGroup.classList.add('hidden');
             giornoSelect.required = false;
             giornoSelect.value = ""; 
-            intervalloInput.value = "1";
         }
     });
 
+    // Inizializzazione al caricamento
     window.addEventListener('DOMContentLoaded', impostaDataAttuale);
 
+    // Invio dei dati
     document.getElementById('msgForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -216,15 +211,18 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "Salvataggio in corso...";
         
+        // Risoluzione potenziale problema di fuso orario: inviamo anche l'offset del client
         const payload = {
             messaggio: document.getElementById('messaggio').value,
             allegato: document.getElementById('allegato').value,
             dataOra: dataOraInput.value.replace('T', ' '),
             frequenza: frequenzaSelect.value,
             giornoOra: giornoSelect.value,
-            intervalloSettimane: parseInt(intervalloInput.value) || 1
+            timezoneOffset: new Date().getTimezoneOffset() // Utile lato Google Script se devi calcolare l'ora esatta
         };
 
+        // Utilizziamo l'API Fetch. Nota: 'no-cors' restituisce una risposta "opaque".
+        // Se Google Script restituisce un testo o un JSON, con 'no-cors' entrerà SEMPRE nel .then() anche in caso di errore 500 del server.
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', 
@@ -235,11 +233,11 @@
         .then(() => {
             alert('Messaggio memorizzato nel foglio con successo!');
             document.getElementById('msgForm').reset();
-            opzioniSettimanali.classList.add('hidden'); 
-            impostaDataAttuale();
+            giornoGroup.classList.add('hidden'); 
+            impostaDataAttuale(); // Re-imposta la data aggiornata dopo il reset
         })
         .catch(err => {
-            alert('Errore durante il salvataggio: ' + err);
+            alert('Si è verificato un errore di rete durante il salvataggio: ' + err);
         })
         .finally(() => {
             submitBtn.disabled = false;

@@ -153,7 +153,7 @@
             </select>
         </div>
 
-        <!-- Questo gruppo si mostra SOLO se viene selezionato "Settimanale" -->
+        <!-- Visibile solo se viene selezionato "Settimanale" -->
         <div class="form-group hidden" id="giornoSettimanaGroup">
             <label for="giornoSettimana">Giorno della Settimana</label>
             <select id="giornoSettimana">
@@ -173,14 +173,22 @@
 </div>
 
 <script>
-    // Aggiornato con il tuo nuovo URL di distribuzione
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDfuUL68DeSagNMutnpJnrwZvttcQiG-6CipbrG_H-qy5cAh1pCr5JyKYnr_hd526I/exec";
 
     const frequenzaSelect = document.getElementById('frequenza');
     const giornoGroup = document.getElementById('giornoSettimanaGroup');
     const giornoSelect = document.getElementById('giornoSettimana');
+    const dataOraInput = document.getElementById('dataOra');
 
-    // Mostra/Nasconde il selettore del giorno della settimana in base alla frequenza
+    // Funzione per impostare la data e ora attuale nel fuso orario locale
+    function impostaDataAttuale() {
+        const oraAttuale = new Date();
+        const offset = oraAttuale.getTimezoneOffset();
+        const dataLocale = new Date(oraAttuale.getTime() - (offset * 60 * 1000));
+        dataOraInput.value = dataLocale.toISOString().slice(0, 16);
+    }
+
+    // Gestione visibilità giorno della settimana
     frequenzaSelect.addEventListener('change', function() {
         if (this.value === 'Settimanale') {
             giornoGroup.classList.remove('hidden');
@@ -188,19 +196,14 @@
         } else {
             giornoGroup.classList.add('hidden');
             giornoSelect.required = false;
-            giornoSelect.value = ""; // Resetta la selezione se cambia frequenza
+            giornoSelect.value = ""; 
         }
     });
 
-    // Precompila automaticamente il campo Data e Ora con il momento attuale locale
-    window.addEventListener('DOMContentLoaded', () => {
-        const dataOraInput = document.getElementById('dataOra');
-        const oraAttuale = new Date();
-        oraAttuale.setMinutes(oraAttuale.getMinutes() - oraAttuale.getTimezoneOffset());
-        dataOraInput.value = oraAttuale.toISOString().slice(0, 16);
-    });
+    // Inizializzazione al caricamento
+    window.addEventListener('DOMContentLoaded', impostaDataAttuale);
 
-    // Gestione dell'invio dei dati al Google Sheet
+    // Invio dei dati
     document.getElementById('msgForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -208,17 +211,21 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "Salvataggio in corso...";
         
+        // Risoluzione potenziale problema di fuso orario: inviamo anche l'offset del client
         const payload = {
             messaggio: document.getElementById('messaggio').value,
             allegato: document.getElementById('allegato').value,
-            dataOra: document.getElementById('dataOra').value.replace('T', ' '),
+            dataOra: dataOraInput.value.replace('T', ' '),
             frequenza: frequenzaSelect.value,
-            giornoOra: giornoSelect.value
+            giornoOra: giornoSelect.value,
+            timezoneOffset: new Date().getTimezoneOffset() // Utile lato Google Script se devi calcolare l'ora esatta
         };
 
+        // Utilizziamo l'API Fetch. Nota: 'no-cors' restituisce una risposta "opaque".
+        // Se Google Script restituisce un testo o un JSON, con 'no-cors' entrerà SEMPRE nel .then() anche in caso di errore 500 del server.
         fetch(WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors',
+            mode: 'no-cors', 
             cache: 'no-cache',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -226,15 +233,11 @@
         .then(() => {
             alert('Messaggio memorizzato nel foglio con successo!');
             document.getElementById('msgForm').reset();
-            giornoGroup.classList.add('hidden'); // Nasconde nuovamente il selettore dei giorni
-            
-            const dataOraInput = document.getElementById('dataOra');
-            const oraAttuale = new Date();
-            oraAttuale.setMinutes(oraAttuale.getMinutes() - oraAttuale.getTimezoneOffset());
-            dataOraInput.value = oraAttuale.toISOString().slice(0, 16);
+            giornoGroup.classList.add('hidden'); 
+            impostaDataAttuale(); // Re-imposta la data aggiornata dopo il reset
         })
         .catch(err => {
-            alert('Si è verificato un errore durante il salvataggio: ' + err);
+            alert('Si è verificato un errore di rete durante il salvataggio: ' + err);
         })
         .finally(() => {
             submitBtn.disabled = false;

@@ -247,10 +247,13 @@
         const btn = this;
         btn.disabled = true; btn.innerText = "Salvataggio...";
         const payload = { azione: "aggiungiDestinatario", nome: nome, id: id };
+        // Inviamo come form-urlencoded: più affidabile in no-cors, lo script
+        // lo legge da e.parameter
+        const corpo = new URLSearchParams(payload).toString();
         fetch(WEB_APP_URL, {
             method: 'POST', mode: 'no-cors', cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: corpo
         })
         .then(() => {
             setTimeout(function() {
@@ -285,16 +288,17 @@
         const payload = {
             messaggio: document.getElementById('messaggio').value,
             allegato: document.getElementById('allegato').value,
-            destinatari: destinatari,
+            destinatari: destinatari.join(','), // stringa separata da virgole
             dataOra: dataOraInput.value.replace('T', ' '),
             frequenza: frequenzaSelect.value,
             giornoOra: giornoSelect.value,
             timezoneOffset: new Date().getTimezoneOffset()
         };
+        const corpo = new URLSearchParams(payload).toString();
         fetch(WEB_APP_URL, {
             method: 'POST', mode: 'no-cors', cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: corpo
         })
         .then(() => {
             alert('Messaggio memorizzato nel foglio con successo!');

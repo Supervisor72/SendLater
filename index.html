@@ -16,159 +16,65 @@
             --text-color: #333333;
             --border-color: #e5e5ea;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--background-color);
-            margin: 0;
-            padding: 16px;
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 90vh;
+            margin: 0; padding: 16px; color: var(--text-color);
+            display: flex; justify-content: center; align-items: flex-start; min-height: 90vh;
         }
-
         .card {
-            background: var(--card-background);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
+            background: var(--card-background); padding: 24px; border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05); width: 100%; max-width: 400px; box-sizing: border-box;
         }
-
         h2 {
-            margin-top: 0;
-            margin-bottom: 24px;
-            color: var(--primary-color);
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            margin-top: 0; margin-bottom: 24px; color: var(--primary-color);
+            text-align: center; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
         }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #555;
-        }
-
+        .form-group { margin-bottom: 20px; }
+        .hidden { display: none !important; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #555; }
         textarea, input, select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background-color: #fcfcfd;
-            transition: border-color 0.2s, background-color 0.2s;
-            -webkit-appearance: none;
+            width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
+            border-radius: 10px; box-sizing: border-box; font-size: 16px;
+            background-color: #fcfcfd; transition: border-color 0.2s, background-color 0.2s; -webkit-appearance: none;
         }
-
-        textarea:focus, input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background-color: #ffffff;
-        }
-
-        textarea {
-            resize: none;
-            height: 120px;
-            font-family: inherit;
-        }
-
+        textarea:focus, input:focus, select:focus { outline: none; border-color: var(--primary-color); background-color: #fff; }
+        textarea { resize: none; height: 120px; font-family: inherit; }
         select {
             background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%238e8e93' d='M0 0l5 5 5-5z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            background-size: 12px;
-            padding-right: 40px;
+            background-repeat: no-repeat; background-position: right 14px center; background-size: 12px; padding-right: 40px;
         }
-
-        /* Lista destinatari (checkbox) */
         .destinatari-list {
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 8px;
-            background-color: #fcfcfd;
-            max-height: 180px;
-            overflow-y: auto;
+            border: 1px solid var(--border-color); border-radius: 10px; padding: 8px;
+            background-color: #fcfcfd; max-height: 200px; overflow-y: auto;
         }
-
         .destinatario-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 6px;
-            border-radius: 8px;
-            cursor: pointer;
+            display: flex; align-items: center; padding: 8px 6px; border-radius: 8px;
+            cursor: pointer; margin-bottom: 0; font-weight: 400;
         }
-
-        .destinatario-item:hover {
-            background-color: #f0f0f5;
+        .destinatario-item:hover { background-color: #f0f0f5; }
+        .destinatario-item input[type="checkbox"] { width: auto; margin: 0 10px 0 0; flex-shrink: 0; transform: scale(1.2); }
+        .destinatario-item .dest-nome { font-size: 15px; font-weight: 500; color: var(--text-color); }
+        .destinatario-item .dest-id { display: block; font-size: 12px; color: #8e8e93; font-weight: 400; }
+        .stato-lista { font-size: 13px; color: #8e8e93; padding: 10px 6px; text-align: center; }
+        .hint { font-size: 12px; color: #8e8e93; margin-top: 6px; font-weight: 400; }
+        .aggiungi-box {
+            margin-top: 12px; padding: 14px; border: 1px dashed var(--border-color);
+            border-radius: 10px; background-color: #fbfbfd;
         }
-
-        .destinatario-item input[type="checkbox"] {
-            width: auto;
-            margin: 0 10px 0 0;
-            flex-shrink: 0;
-            transform: scale(1.2);
-        }
-
-        .destinatario-item .dest-nome {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .destinatario-item .dest-id {
-            display: block;
-            font-size: 12px;
-            color: #8e8e93;
-            font-weight: 400;
-        }
-
-        .hint {
-            font-size: 12px;
-            color: #8e8e93;
-            margin-top: 6px;
-            font-weight: 400;
-        }
-
+        .aggiungi-box label { font-size: 13px; }
+        .aggiungi-box input { margin-bottom: 10px; }
+        .btn-secondario { background-color: #eef4ff; color: var(--primary-color); box-shadow: none; padding: 12px; font-size: 15px; }
+        .btn-secondario:hover { background-color: #dfeaff; }
         button {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, background-color 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+            width: 100%; padding: 16px; background-color: var(--primary-color); color: white;
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s, background-color 0.2s; box-shadow: 0 4px 12px rgba(0,122,255,0.2);
         }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        button:disabled {
-            background-color: #999;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #999; box-shadow: none; cursor: not-allowed; }
+        .toggle-aggiungi { background: none; color: var(--primary-color); box-shadow: none; padding: 8px; font-size: 14px; font-weight: 600; margin-top: 8px; }
+        .toggle-aggiungi:hover { background: none; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -186,32 +92,22 @@
             <input type="url" id="allegato" placeholder="https://drive.google.com/...">
         </div>
 
-        <!-- NUOVO: selezione multipla destinatari -->
         <div class="form-group">
             <label>Destinatari (canali/gruppi dove il bot è admin)</label>
             <div class="destinatari-list" id="destinatariList">
-                <!-- SOSTITUISCI questi con i tuoi canali reali (nome + ID o @username) -->
-                <label class="destinatario-item">
-                    <input type="checkbox" class="dest-fissa" value="@nome_canale_1">
-                    <span><span class="dest-nome">Canale Esempio 1</span><span class="dest-id">@nome_canale_1</span></span>
-                </label>
-                <label class="destinatario-item">
-                    <input type="checkbox" class="dest-fissa" value="@nome_canale_2">
-                    <span><span class="dest-nome">Canale Esempio 2</span><span class="dest-id">@nome_canale_2</span></span>
-                </label>
-                <label class="destinatario-item">
-                    <input type="checkbox" class="dest-fissa" value="-1001234567890">
-                    <span><span class="dest-nome">Gruppo Esempio 3</span><span class="dest-id">-1001234567890</span></span>
-                </label>
+                <div class="stato-lista" id="statoLista">Caricamento destinatari...</div>
             </div>
-            <p class="hint">Seleziona uno o più destinatari dalla lista.</p>
-        </div>
+            <p class="hint">Spunta uno o più destinatari a cui inviare.</p>
 
-        <!-- NUOVO: inserimento manuale destinatari aggiuntivi -->
-        <div class="form-group">
-            <label for="destinatariManuali">Destinatari aggiuntivi (manuale)</label>
-            <input type="text" id="destinatariManuali" placeholder="@altro_canale, -1009876543210">
-            <p class="hint">Separa più ID/username con una virgola.</p>
+            <button type="button" class="toggle-aggiungi" id="toggleAggiungi">+ Aggiungi un nuovo destinatario</button>
+
+            <div class="aggiungi-box hidden" id="aggiungiBox">
+                <label for="nuovoNome">Nome (etichetta)</label>
+                <input type="text" id="nuovoNome" placeholder="Es. Offerte Negozio">
+                <label for="nuovoId">ID o @username del canale</label>
+                <input type="text" id="nuovoId" placeholder="@nome_canale  oppure  -1001234567890">
+                <button type="button" class="btn-secondario" id="btnSalvaDest">Salva nella lista</button>
+            </div>
         </div>
 
         <div class="form-group">
@@ -254,6 +150,8 @@
     const giornoGroup = document.getElementById('giornoSettimanaGroup');
     const giornoSelect = document.getElementById('giornoSettimana');
     const dataOraInput = document.getElementById('dataOra');
+    const listaContainer = document.getElementById('destinatariList');
+    const statoLista = document.getElementById('statoLista');
 
     function impostaDataAttuale() {
         const oraAttuale = new Date();
@@ -273,49 +171,104 @@
         }
     });
 
-    // Raccoglie tutti i destinatari (checkbox + manuali) in un unico array senza duplicati
-    function raccogliDestinatari() {
-        const selezionati = Array.from(document.querySelectorAll('.dest-fissa:checked'))
-            .map(cb => cb.value.trim());
-
-        const manuali = document.getElementById('destinatariManuali').value
-            .split(',')
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
-
-        // Unione + rimozione duplicati
-        return [...new Set([...selezionati, ...manuali])];
+    function caricaDestinatari() {
+        statoLista.textContent = "Caricamento destinatari...";
+        fetch(WEB_APP_URL)
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === "success" && Array.isArray(data.destinatari)) {
+                    mostraDestinatari(data.destinatari);
+                } else {
+                    statoLista.textContent = "Nessun destinatario salvato. Aggiungine uno qui sotto.";
+                }
+            })
+            .catch(() => {
+                statoLista.textContent = "Impossibile caricare la lista. Controlla la connessione.";
+            });
     }
 
-    window.addEventListener('DOMContentLoaded', impostaDataAttuale);
+    function mostraDestinatari(lista) {
+        listaContainer.innerHTML = "";
+        if (!lista || lista.length === 0) {
+            const vuoto = document.createElement('div');
+            vuoto.className = "stato-lista";
+            vuoto.textContent = "Nessun destinatario salvato. Aggiungine uno qui sotto.";
+            listaContainer.appendChild(vuoto);
+            return;
+        }
+        lista.forEach(function(d) {
+            const label = document.createElement('label');
+            label.className = "destinatario-item";
+            const cb = document.createElement('input');
+            cb.type = "checkbox"; cb.className = "dest-fissa"; cb.value = d.id;
+            const wrap = document.createElement('span');
+            const nome = document.createElement('span');
+            nome.className = "dest-nome"; nome.textContent = d.nome || d.id;
+            const id = document.createElement('span');
+            id.className = "dest-id"; id.textContent = d.id;
+            wrap.appendChild(nome); wrap.appendChild(id);
+            label.appendChild(cb); label.appendChild(wrap);
+            listaContainer.appendChild(label);
+        });
+    }
+
+    document.getElementById('toggleAggiungi').addEventListener('click', function() {
+        document.getElementById('aggiungiBox').classList.toggle('hidden');
+    });
+
+    document.getElementById('btnSalvaDest').addEventListener('click', function() {
+        const nome = document.getElementById('nuovoNome').value.trim();
+        const id = document.getElementById('nuovoId').value.trim();
+        if (id === "") { alert('Inserisci almeno l\'ID o lo @username del canale.'); return; }
+        const btn = this;
+        btn.disabled = true; btn.innerText = "Salvataggio...";
+        const payload = { azione: "aggiungiDestinatario", nome: nome, id: id };
+        fetch(WEB_APP_URL, {
+            method: 'POST', mode: 'no-cors', cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            setTimeout(function() {
+                document.getElementById('nuovoNome').value = "";
+                document.getElementById('nuovoId').value = "";
+                caricaDestinatari();
+                btn.disabled = false; btn.innerText = "Salva nella lista";
+            }, 1200);
+        })
+        .catch(err => {
+            alert('Errore durante il salvataggio: ' + err);
+            btn.disabled = false; btn.innerText = "Salva nella lista";
+        });
+    });
+
+    function raccogliDestinatari() {
+        return Array.from(document.querySelectorAll('.dest-fissa:checked'))
+            .map(cb => cb.value.trim()).filter(v => v.length > 0);
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        impostaDataAttuale();
+        caricaDestinatari();
+    });
 
     document.getElementById('msgForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const destinatari = raccogliDestinatari();
-        if (destinatari.length === 0) {
-            alert('Seleziona o inserisci almeno un destinatario.');
-            return;
-        }
-
+        if (destinatari.length === 0) { alert('Spunta almeno un destinatario a cui inviare.'); return; }
         const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Salvataggio in corso...";
-
+        submitBtn.disabled = true; submitBtn.innerText = "Salvataggio in corso...";
         const payload = {
             messaggio: document.getElementById('messaggio').value,
             allegato: document.getElementById('allegato').value,
-            destinatari: destinatari, // ARRAY di tutti i destinatari
+            destinatari: destinatari,
             dataOra: dataOraInput.value.replace('T', ' '),
             frequenza: frequenzaSelect.value,
             giornoOra: giornoSelect.value,
             timezoneOffset: new Date().getTimezoneOffset()
         };
-
         fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            cache: 'no-cache',
+            method: 'POST', mode: 'no-cors', cache: 'no-cache',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
@@ -324,13 +277,13 @@
             document.getElementById('msgForm').reset();
             giornoGroup.classList.add('hidden');
             impostaDataAttuale();
+            caricaDestinatari();
         })
         .catch(err => {
             alert('Si è verificato un errore di rete durante il salvataggio: ' + err);
         })
         .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "Programma Messaggio";
+            submitBtn.disabled = false; submitBtn.innerText = "Programma Messaggio";
         });
     });
 </script>

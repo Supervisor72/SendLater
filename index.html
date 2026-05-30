@@ -171,20 +171,44 @@
         }
     });
 
+    // Carica la lista via JSONP (aggira il blocco CORS sulla lettura)
     function caricaDestinatari() {
         statoLista.textContent = "Caricamento destinatari...";
-        fetch(WEB_APP_URL)
-            .then(r => r.json())
-            .then(data => {
-                if (data.status === "success" && Array.isArray(data.destinatari)) {
-                    mostraDestinatari(data.destinatari);
-                } else {
-                    statoLista.textContent = "Nessun destinatario salvato. Aggiungine uno qui sotto.";
-                }
-            })
-            .catch(() => {
-                statoLista.textContent = "Impossibile caricare la lista. Controlla la connessione.";
-            });
+
+        // nome univoco della funzione di callback
+        const nomeCallback = "cbDest_" + Date.now();
+
+        // timeout di sicurezza: se non risponde entro 8s, mostra errore
+        const timeout = setTimeout(function() {
+            pulisci();
+            statoLista.textContent = "Impossibile caricare la lista. Riprova o ricarica la pagina.";
+        }, 8000);
+
+        function pulisci() {
+            delete window[nomeCallback];
+            if (script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        // la funzione che lo script Google richiamerà passando i dati
+        window[nomeCallback] = function(data) {
+            clearTimeout(timeout);
+            pulisci();
+            if (data && data.status === "success" && Array.isArray(data.destinatari)) {
+                mostraDestinatari(data.destinatari);
+            } else {
+                statoLista.textContent = "Nessun destinatario salvato. Aggiungine uno qui sotto.";
+            }
+        };
+
+        const sep = WEB_APP_URL.indexOf('?') === -1 ? '?' : '&';
+        const script = document.createElement('script');
+        script.src = WEB_APP_URL + sep + "callback=" + nomeCallback;
+        script.onerror = function() {
+            clearTimeout(timeout);
+            pulisci();
+            statoLista.textContent = "Impossibile caricare la lista. Controlla la connessione.";
+        };
+        document.body.appendChild(script);
     }
 
     function mostraDestinatari(lista) {
